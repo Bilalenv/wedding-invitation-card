@@ -15,7 +15,7 @@ const imageUrls = [
   '/images/flap3.png',
   '/images/envelope3.png',
   '/images/card.png',
-  '/images/invetation.png',
+  '/images/invetation.jpeg',
   // baki saari images yahan add karo
 ];
 
@@ -300,11 +300,11 @@ const WeddingCard = () => {
           {/* ============ LEFT INVITATION CARD ============ */}
           <div
             ref={leftInv}
-            className='absolute left-1/2 top-1/2 -ml-[200px] -mt-[250px] w-[400px] h-[500px] z-10 rounded-sm overflow-hidden bg-[#fbf4e6] border-2 border-amber-600/60 shadow-xl'
+            className='absolute left-1/2 top-1/2 -ml-[200px] -mt-[250px] w-[400px] h-[600px] z-10 rounded-xl overflow-hidden bg-[#fbf4e6] border-2 border-amber-600/60 shadow-xl'
           >
             {/* TODO: LEFT CARD IMAGE (400 x 500px) -> apni image yahan lagao (public/images/invite-left.png) */}
             <img
-              src='/images/invetation.png'
+              src='/images/invetation.jpeg'
               className='w-full h-full object-cover'
               alt='Left invitation'
             />
@@ -314,11 +314,11 @@ const WeddingCard = () => {
           {/* ============ RIGHT INVITATION CARD ============ */}
           <div
             ref={rightInv}
-            className='absolute left-1/2 top-1/2 -ml-[200px] -mt-[250px] w-[400px] h-[500px] z-10 rounded-sm overflow-hidden bg-[#fbf4e6] border-2 border-amber-600/60 shadow-xl'
+            className='absolute left-1/2 top-1/2 -ml-[200px] -mt-[250px] w-[400px] h-[600px] z-10 rounded-xl overflow-hidden bg-[#fbf4e6] border-2 border-amber-600/60 shadow-xl'
           >
             {/* TODO: RIGHT CARD IMAGE (400 x 500px) -> apni image yahan lagao (public/images/invite-right.png) */}
             <img
-              src='/images/invetation.png'
+              src='/images/invetation.jpeg'
               className='w-full h-full object-cover'
               alt='Right invitation'
             />
