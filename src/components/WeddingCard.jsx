@@ -4,10 +4,24 @@ import { ScrollTrigger } from 'gsap/all';
 import { useGSAP } from '@gsap/react';
 
 gsap.registerPlugin(ScrollTrigger);
-
+// mobile address bar show/hide should not re-calculate the whole animation
 ScrollTrigger.config({ ignoreMobileResize: true });
 
+// Saari images jo animation mein use hoti hain (pehle se load ho jayengi)
+const imageUrls = [
+  '/images/gg.png',
+  '/images/flowers.png',
+  '/images/flap1.png',
+  '/images/flap3.png',
+  '/images/envelope3.png',
+  '/images/card.png',
+  '/images/invite-left.png',
+  '/images/invite-right.png',
+  // baki saari images yahan add karo
+];
 
+// invitation cards are real 400 x 500px cards. This gives the scale that fits the screen.
+// desktop (>=900px): two cards side by side | mobile: one card on top of the other
 const isDesktop = () => window.innerWidth >= 900;
 const invScale = () =>
   Math.min(
@@ -16,7 +30,7 @@ const invScale = () =>
     isDesktop() ? (window.innerWidth - 48) / 832 : (window.innerWidth - 32) / 400
   );
 
-
+// envelope is designed at 400 x 750px; shrink it to fit smaller screens
 const getScale = () =>
   typeof window === 'undefined'
     ? 1
@@ -26,14 +40,30 @@ const WeddingCard = () => {
   const leftFlower = useRef(null);
   const rightFlower = useRef(null);
 
-  
+  // Section 2 (envelope)
   const container = useRef(null);
   const envelope = useRef(null);
   const flap = useRef(null);
   const card = useRef(null);
-  const openedRef = useRef(false); 
+  const openedRef = useRef(false); // ref => GSAP callbacks always see the latest value
   const [openEnvelope, setEnvelope] = useState(false);
   const [scale, setScale] = useState(getScale);
+
+  // preload: browser images pehle hi download kar leta hai, isliye animation mein flicker nahi hota
+  useEffect(() => {
+    let loaded = 0;
+    imageUrls.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+      const done = () => {
+        loaded += 1;
+        // jab sab load ho jayein to ScrollTrigger positions dobara calculate karo
+        if (loaded === imageUrls.length) ScrollTrigger.refresh();
+      };
+      img.onload = done;
+      img.onerror = done; // image missing ho tab bhi refresh ho jaye
+    });
+  }, []);
 
   useEffect(() => {
     const onResize = () => setScale(getScale());
@@ -41,7 +71,7 @@ const WeddingCard = () => {
     return () => window.removeEventListener('resize', onResize);
   }, []);
 
-  
+  // Section 3 (card opens, invitation comes out)
   const cardSection = useRef(null);
   const cardWrap = useRef(null);
   const leftDoor = useRef(null);
@@ -55,12 +85,12 @@ const WeddingCard = () => {
   };
 
   useGSAP(() => {
-    
+    // ---------- flowers sway ----------
     gsap.fromTo(leftFlower.current, { rotate: 0 }, { rotate: 20, duration: 2, yoyo: true, repeat: -1, ease: 'none' });
     gsap.fromTo(rightFlower.current, { rotate: 0 }, { rotate: -20, duration: 2, yoyo: true, repeat: -1, ease: 'none' });
 
     // ---------- SECTION 2: envelope rises -> (click) -> card slides out ----------
-    let gate = 1; 
+    let gate = 1; // scroll progress where we wait for the click
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: container.current,
@@ -200,55 +230,59 @@ const WeddingCard = () => {
           className='absolute left-1/2 bottom-0 w-[400px] h-[750px]'
           style={{ transform: `translateX(-50%) scale(${scale})`, transformOrigin: 'bottom center' }}
         >
-        <div ref={envelope} className='absolute inset-0 translate-y-[100%] opacity-0 flex flex-col [perspective:1000px]'>
+          <div ref={envelope} className='absolute inset-0 translate-y-[100%] opacity-0 flex flex-col [perspective:1000px]'>
 
-          {openEnvelope ? (
-            <div className="absolute left-[50%] translate-x-[-50%] top-[80%] translate-y-[-80%] flex flex-col items-center animate-bounce z-40 pointer-events-none">
-              <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#CFCECA] font-sans">
-                Scroll Down To Unfold
-              </span>
-              <span className="text-lg sm:text-xl text-[#CFCECA] mt-1">↓</span>
-            </div>
-          ) : (
-            <h1 className='absolute left-[50%] translate-x-[-50%] top-[42%] translate-y-[-50%] z-40 text-white pointer-events-none font-serif text-sm tracking-wider'>
-              Click To See Details
-            </h1>
-          )}
+            {openEnvelope ? (
+              <div className="absolute left-[50%] translate-x-[-50%] top-[80%] translate-y-[-80%] flex flex-col items-center animate-bounce z-40 pointer-events-none">
+                <span className="text-[10px] sm:text-xs uppercase tracking-[0.3em] text-[#CFCECA] font-sans">
+                  Scroll Down To Unfold
+                </span>
+                <span className="text-lg sm:text-xl text-[#CFCECA] mt-1">↓</span>
+              </div>
+            ) : (
+              <h1 className='absolute left-[50%] translate-x-[-50%] top-[42%] translate-y-[-50%] z-40 text-white pointer-events-none font-serif text-sm tracking-wider'>
+                Click To See Details
+              </h1>
+            )}
 
-          <div className='relative w-full h-full'>
-            <button
-              ref={flap}
-              onClick={handleOpen}
-              style={{
-                transformOrigin: 'top center',
-                transform: openEnvelope ? 'rotateX(-180deg)' : 'rotateX(0deg)'
-              }}
-              className="absolute top-[250px] left-0 w-full h-[250px] z-30 transition-transform duration-[1200ms] ease-in-out [transform-style:preserve-3d] focus:outline-none"
-            >
-              <img
-                src={openEnvelope ? "/images/flap3.png" : "/images/flap1.png"}
-                className='w-[101%] h-full object-fill -ml-[0.5%]'
-                alt="Envelope Flap"
-              />
-            </button>
+            <div className='relative w-full h-full'>
+              <button
+                ref={flap}
+                onClick={handleOpen}
+                style={{
+                  transformOrigin: 'top center',
+                  transform: openEnvelope ? 'rotateX(-180deg)' : 'rotateX(0deg)'
+                }}
+                className="absolute top-[250px] left-0 w-full h-[250px] z-30 transition-transform duration-[1200ms] ease-in-out [transform-style:preserve-3d] focus:outline-none"
+              >
+                <img
+                  src={openEnvelope ? "/images/flap3.png" : "/images/flap1.png"}
+                  fetchPriority='high'
+                  loading='eager'
+                  className='w-[101%] h-full object-fill -ml-[0.5%]'
+                  alt="Envelope Flap"
+                />
+              </button>
 
-            {/* CARD: sits inside the envelope, between the back (z-10) and the front pocket (z-20) */}
-            <div
-              ref={card}
-              className='absolute left-[30px] top-[330px] w-[340px] z-10 pointer-events-none'
-            >
-              <img
-                src='/images/card.png'
-                className='w-full h-auto rounded-md shadow-2xl'
-                alt="Wedding Card"
-              />
-            </div>
+              {/* CARD: sits inside the envelope, between the back (z-10) and the front pocket (z-20) */}
+              <div
+                ref={card}
+                className='absolute left-[30px] top-[330px] w-[340px] z-10 pointer-events-none'
+              >
+                <img
+                  src='/images/card.png'
+                  fetchPriority='high'
+                  loading='eager'
+                  className='w-full h-auto rounded-md shadow-2xl'
+                  alt="Wedding Card"
+                />
+              </div>
 
-            <div className='absolute bottom-0 w-full h-[500px] flex justify-center items-center z-20 pointer-events-none'>
-              <img src='/images/envelope3.png' className='w-full h-full object-fill' alt="Envelope Base" />
+              <div className='absolute bottom-0 w-full h-[500px] flex justify-center items-center z-20 pointer-events-none'>
+                <img src='/images/envelope3.png' fetchPriority='high' loading='eager' className='w-full h-full object-fill' alt="Envelope Base" />
+              </div>
             </div>
           </div>
-        </div>
         </div>
       </section>
 
@@ -267,12 +301,12 @@ const WeddingCard = () => {
           {/* ============ LEFT INVITATION CARD ============ */}
           <div
             ref={leftInv}
-            className='absolute left-1/2 top-1/2 -ml-[200px] -mt-[250px] w-[400px] h-[600px] z-10 rounded-xl overflow-hidden bg-[#fbf4e6] border-2 border-amber-600/60 shadow-xl'
+            className='absolute left-1/2 top-1/2 -ml-[200px] -mt-[250px] w-[400px] h-[500px] z-10 rounded-sm overflow-hidden bg-[#fbf4e6] border-2 border-amber-600/60 shadow-xl'
           >
             {/* TODO: LEFT CARD IMAGE (400 x 500px) -> apni image yahan lagao (public/images/invite-left.png) */}
             <img
-              src='/images/invetation.jpeg'
-              className='w-full h-full  object-top'
+              src='/images/invite-left.png'
+              className='w-full h-full object-cover'
               alt='Left invitation'
             />
             {/* Agar image ke upar text chahiye to yahan absolute div bana lo */}
@@ -281,11 +315,11 @@ const WeddingCard = () => {
           {/* ============ RIGHT INVITATION CARD ============ */}
           <div
             ref={rightInv}
-            className='absolute left-1/2 top-1/2 -ml-[200px] -mt-[250px] w-[400px] h-[600px] z-10 rounded-xl overflow-hidden bg-[#fbf4e6] border-2 border-amber-600/60 shadow-xl'
+            className='absolute left-1/2 top-1/2 -ml-[200px] -mt-[250px] w-[400px] h-[500px] z-10 rounded-sm overflow-hidden bg-[#fbf4e6] border-2 border-amber-600/60 shadow-xl'
           >
             {/* TODO: RIGHT CARD IMAGE (400 x 500px) -> apni image yahan lagao (public/images/invite-right.png) */}
             <img
-              src='/images/invetation.jpeg'
+              src='/images/invite-right.png'
               className='w-full h-full object-cover'
               alt='Right invitation'
             />
@@ -298,7 +332,6 @@ const WeddingCard = () => {
             style={doorStyle('left')}
             className='absolute top-0 left-0 w-1/2 h-full z-20 rounded-l-md'
           />
-          
           <div
             ref={rightDoor}
             style={doorStyle('right')}
