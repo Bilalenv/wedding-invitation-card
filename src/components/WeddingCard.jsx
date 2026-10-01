@@ -15,8 +15,7 @@ const imageUrls = [
   '/images/flap3.png',
   '/images/envelope3.png',
   '/images/card.png',
-  '/images/invite-left.png',
-  '/images/invite-right.png',
+  '/images/invetation.png',
   // baki saari images yahan add karo
 ];
 
@@ -305,7 +304,7 @@ const WeddingCard = () => {
           >
             {/* TODO: LEFT CARD IMAGE (400 x 500px) -> apni image yahan lagao (public/images/invite-left.png) */}
             <img
-              src='/images/invite-left.png'
+              src='/images/invetation.png'
               className='w-full h-full object-cover'
               alt='Left invitation'
             />
@@ -319,7 +318,7 @@ const WeddingCard = () => {
           >
             {/* TODO: RIGHT CARD IMAGE (400 x 500px) -> apni image yahan lagao (public/images/invite-right.png) */}
             <img
-              src='/images/invite-right.png'
+              src='/images/invetation.png'
               className='w-full h-full object-cover'
               alt='Right invitation'
             />
